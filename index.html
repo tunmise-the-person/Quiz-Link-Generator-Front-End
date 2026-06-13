@@ -151,6 +151,13 @@
   .quiz-nav { gap: 10px; flex-wrap: wrap; }
   .quiz-status { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .quiz-status-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 100px; padding: 4px 10px; font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+  /* QUESTION NAV DOTS */
+  .q-nav-panel { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 28px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .q-nav-dot { width: 34px; height: 34px; border-radius: var(--r-sm); border: 1.5px solid var(--border); font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.18s; background: var(--surface2); color: var(--muted); display: flex; align-items: center; justify-content: center; }
+  .q-nav-dot:hover { border-color: var(--accent-light); color: var(--text); }
+  .q-nav-dot.answered { background: rgba(34,211,160,0.18); border-color: var(--success); color: var(--success); }
+  .q-nav-dot.skipped { background: rgba(244,63,94,0.15); border-color: var(--danger); color: var(--danger); }
+  .q-nav-dot.current { outline: 2px solid var(--accent); outline-offset: 2px; }
   .quiz-status-chip strong { color: var(--text); }
   .timer-ring.untimed { display: none; }
 
@@ -442,6 +449,7 @@
       <span class="quiz-status-chip"><strong id="unanswered-count">0</strong> unanswered</span>
     </div>
   </div>
+  <div class="q-nav-panel" id="q-nav-panel"></div>
   <div class="quiz-body">
     <div class="quiz-card">
       <div class="q-number" id="q-label">Question 1</div>
@@ -1033,6 +1041,7 @@ function startQuiz() {
   playerSkipped = new Array(activeQuiz.questions.length).fill(false);
   quizStartedAt = new Date();
   goTo('quiz'); loadQuestion();
+  renderQNavPanel();
 }
 
 function loadQuestion() {
@@ -1058,6 +1067,7 @@ function selectAnswer(idx) {
   playerSkipped[currentQ] = false;
   document.querySelectorAll('.answer-btn').forEach((b,i) => b.classList.toggle('selected', i===idx));
   updateQuizStatus();
+  renderQNavPanel();
 }
 
 function nextQuestion() {
@@ -1110,6 +1120,27 @@ function updateQuizStatus() {
     <span class="quiz-status-chip"><strong id="answered-count">${answered}</strong> answered</span>
     <span class="quiz-status-chip"><strong id="unanswered-count">${unanswered}</strong> unanswered</span>
     <span class="quiz-status-chip"><strong>${skipped}</strong> skipped</span>`;
+}
+
+function renderQNavPanel() {
+  const panel = document.getElementById('q-nav-panel');
+  if (!panel) return;
+  panel.innerHTML = activeQuiz.questions.map((_, i) => {
+    const isAnswered = playerAnswers[i] !== -1;
+    const isSkipped = playerAnswers[i] === -1 && playerSkipped[i];
+    const isCurrent = i === currentQ;
+    let cls = 'q-nav-dot';
+    if (isAnswered) cls += ' answered';
+    else if (isSkipped) cls += ' skipped';
+    if (isCurrent) cls += ' current';
+    return `<button class="${cls}" onclick="jumpToQuestion(${i})" title="Question ${i+1}">${i+1}</button>`;
+  }).join('');
+}
+
+function jumpToQuestion(idx) {
+  clearInterval(timerInterval);
+  currentQ = idx;
+  loadQuestion();
 }
 
 // ════════════════════════════════════

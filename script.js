@@ -618,6 +618,21 @@ function skipQuestion() {
   loadQuestion();
 }
 
+let flaggedQuestions = new Set(); // reset to new Set() in startQuiz() / retakeQuiz()
+
+function toggleFlag() {
+  flaggedQuestions.has(currentQ) ? flaggedQuestions.delete(currentQ) : flaggedQuestions.add(currentQ);
+  updateFlagButton();
+  renderQuizNavDots(); // rename to whatever your q-nav-panel render function is
+}
+
+function updateFlagButton() {
+  const flagged = flaggedQuestions.has(currentQ);
+  const btn = document.getElementById('btn-flag');
+  btn.textContent = flagged ? ' Flagged' : ' Flag for Review';
+  btn.classList.toggle('btn-primary', flagged);
+}
+
 function confirmSubmit() {
   clearInterval(timerInterval);
   updateQuizStatus();

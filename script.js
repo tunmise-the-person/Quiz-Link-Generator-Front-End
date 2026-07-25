@@ -86,6 +86,37 @@ function hideLoading() {
   document.getElementById('loading-overlay').classList.remove('active');
 }
 
+// Pull-to-refresh interception
+let touchStartY = 0, pullTriggered = false;
+let quizInProgress = false; // set true in startQuiz(), false after submitQuiz() finishes
+
+document.addEventListener('touchstart', e => {
+  if (window.scrollY === 0) touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  if (window.scrollY === 0 && !pullTriggered && quizInProgress) {
+    if (e.touches[0].clientY - touchStartY > 60) {
+      pullTriggered = true;
+      e.preventDefault();
+      document.getElementById('refresh-modal-bg').classList.add('open');
+    }
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', () => { pullTriggered = false; });
+
+function cancelRefresh() {
+  document.getElementById('refresh-modal-bg').classList.remove('open');
+  // no-op: gesture was already prevented, nothing to restore
+}
+function confirmRefresh() { window.location.reload(); }
+
+// Native dialog fallback for F5 / refresh button / tab close
+window.addEventListener('beforeunload', e => {
+  if (quizInProgress) { e.preventDefault(); e.returnValue = ''; }
+});
+
 // ════════════════════════════════════
 // TOAST
 // ════════════════════════════════════

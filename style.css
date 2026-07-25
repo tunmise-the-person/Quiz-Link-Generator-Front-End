@@ -5,6 +5,7 @@
     --accent: #6366f1; --accent-light: #818cf8; --accent-dim: rgba(99,102,241,0.15);
     --success: #22d3a0; --danger: #f43f5e; --warn: #fb923c;
     --text: #e8eaf6; --muted: #6b7280; --r: 14px; --r-sm: 8px;
+    html, body { overscroll-behavior-y: contain; }
   }
   html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6; }
   .screen { display: none; min-height: 100vh; }

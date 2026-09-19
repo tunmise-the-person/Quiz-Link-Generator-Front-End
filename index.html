@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QuizForge</title>
-<link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -28,18 +28,32 @@
     </div>
   </div>
 </div>
-  
+
+<!-- REFRESH CONFIRM MODAL -->
 <div class="modal-bg" id="refresh-modal-bg">
   <div class="confirm-modal">
     <h3>Refresh this page?</h3>
-    <p>Reloading will restart your session. Refresh anyway?</p>
+    <p>Reloading will restart your session and any unsaved progress may be lost.</p>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="cancelRefresh()">No</button>
       <button class="btn btn-danger" onclick="confirmRefresh()">Yes</button>
     </div>
   </div>
 </div>
-  
+
+<!-- SUBMIT CONFIRM MODAL -->
+<div class="modal-bg" id="submit-modal-bg">
+  <div class="confirm-modal">
+    <h3>Submit quiz?</h3>
+    <p id="submit-modal-body">Are you sure you want to submit?</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btn-review-unanswered" style="display:none">Go to Unanswered</button>
+      <button class="btn btn-ghost" onclick="closeSubmitModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-confirm-submit">Submit</button>
+    </div>
+  </div>
+</div>
+
 <!-- SHARE SETUP MODAL -->
 <div class="modal-bg" id="apikey-modal-bg">
   <div class="modal">
@@ -200,7 +214,7 @@
     <span style="color:var(--muted);font-size:0.82rem" id="builder-status">No questions added.</span>
     <div class="toolbar-spacer"></div>
     <button class="btn btn-ghost" onclick="addQuestion()">+ Add Question</button>
-    <button class="btn btn-primary" onclick="generateShareLink()">🔗 Get Share Link</button>
+    <button class="btn btn-primary" onclick="generateShareLink()"> Get Share Link</button>
   </div>
 </div>
 
@@ -247,9 +261,9 @@
       <div class="q-text" id="q-text">Loading...</div>
       <div class="answer-grid" id="answer-grid"></div>
       <div class="quiz-nav">
+        <button class="btn btn-ghost" id="btn-flag" onclick="toggleFlag()"> Flag for Review</button>
         <button class="btn btn-ghost" id="btn-skip" onclick="skipQuestion()">Skip</button>
         <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()">Next</button>
-        <button class="btn btn-ghost" id="btn-flag" onclick="toggleFlag()">Flag for Review</button>
       </div>
     </div>
   </div>
@@ -293,5 +307,6 @@
 </div>
 
 <script src="script.js" defer></script>
+
 </body>
 </html>

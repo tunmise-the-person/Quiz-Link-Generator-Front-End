@@ -326,7 +326,7 @@ function renderEditor() {
               <input type="radio" name="correct-q" class="radio-correct" value="${i}" ${i===q.correct?'checked':''} title="Correct answer" onchange="setCorrect(${i})">
             </div>`).join('')}
         </div>
-        <div class="hint-text">☝ Radio = correct answer.</div>
+        <div class="hint-text"> Radio = correct answer.</div>
       </div>
       <div class="settings-row">
         <div class="field">

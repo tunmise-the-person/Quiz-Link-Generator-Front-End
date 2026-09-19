@@ -5,20 +5,24 @@ const MAX_QUESTIONS = 100;
 const STORAGE_KEY_API = 'quizforge_apikey';
 const STORAGE_KEY_QUIZ = 'quizforge_draft';
 const STORAGE_KEY_PUBLIC_URL = 'quizforge_public_url';
-const DEFAULT_API_BASE = 'https://quiz-link-generator.onrender.com';
+const DEFAULT_API_BASE = '';
 
 // ════════════════════════════════════
 // STATE
 // ════════════════════════════════════
-let quiz = { title: 'My Quiz', desc: '', timePerQ: 30, pointsPerQ: 10, timed: true, questions: [] };
+let quiz = { title: 'My Quiz', desc: '', timePerQ: 30, pointsPerQ: 10, timed: true, timingMode: 'perQuestion', totalTime: 20, questions: [] };
 let selectedQIndex = -1;
 let playerName = '';
 let playerId = '';
 let currentQ = 0;
 let playerAnswers = [];
 let playerSkipped = [];
+let flaggedQuestions = new Set();
 let timerInterval = null;
 let timeLeft = 0;
+let totalTimeMode = false;
+let quizTotalSeconds = 0;
+let quizInProgress = false;
 let activeQuiz = null;
 let activeQuizBinId = '';
 let quizStartedAt = null;
@@ -86,9 +90,21 @@ function hideLoading() {
   document.getElementById('loading-overlay').classList.remove('active');
 }
 
-// Pull-to-refresh interception
-let touchStartY = 0, pullTriggered = false;
-let quizInProgress = false; // set true in startQuiz(), false after submitQuiz() finishes
+// ════════════════════════════════════
+// TOAST
+// ════════════════════════════════════
+function toast(msg, dur = 3000) {
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(() => { el.style.animation = 'toastOut 0.25s ease forwards'; setTimeout(() => el.remove(), 270); }, dur);
+}
+
+// ════════════════════════════════════
+// REFRESH GUARD
+// ════════════════════════════════════
+let touchStartY = 0;
+let pullTriggered = false;
 
 document.addEventListener('touchstart', e => {
   if (window.scrollY === 0) touchStartY = e.touches[0].clientY;
@@ -108,24 +124,20 @@ document.addEventListener('touchend', () => { pullTriggered = false; });
 
 function cancelRefresh() {
   document.getElementById('refresh-modal-bg').classList.remove('open');
-  // no-op: gesture was already prevented, nothing to restore
 }
-function confirmRefresh() { window.location.reload(); }
+function confirmRefresh() {
+  window.location.reload();
+}
 
-// Native dialog fallback for F5 / refresh button / tab close
+// Native browser dialog for the refresh button / F5 / tab close.
+// Browsers do not allow this dialog's text or buttons to be customized —
+// this is a hard platform limitation, not something this code can change.
 window.addEventListener('beforeunload', e => {
-  if (quizInProgress) { e.preventDefault(); e.returnValue = ''; }
+  if (quizInProgress) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
 });
-
-// ════════════════════════════════════
-// TOAST
-// ════════════════════════════════════
-function toast(msg, dur = 3000) {
-  const el = document.createElement('div');
-  el.className = 'toast'; el.textContent = msg;
-  document.getElementById('toast-wrap').appendChild(el);
-  setTimeout(() => { el.style.animation = 'toastOut 0.25s ease forwards'; setTimeout(() => el.remove(), 270); }, dur);
-}
 
 // ════════════════════════════════════
 // CONFIRM MODAL
@@ -239,6 +251,8 @@ function saveQuizMeta() {
   quiz.timePerQ = parseInt(document.getElementById('quiz-time').value) || 30;
   quiz.pointsPerQ = parseInt(document.getElementById('quiz-points').value) || 10;
   quiz.timed = document.getElementById('quiz-timed').checked;
+  quiz.timingMode = document.getElementById('quiz-timing-mode').value;
+  quiz.totalTime = parseInt(document.getElementById('quiz-total-time').value) || 20;
   saveDraft();
 }
 function loadQuizMeta() {
@@ -247,6 +261,8 @@ function loadQuizMeta() {
   document.getElementById('quiz-time').value = quiz.timePerQ;
   document.getElementById('quiz-points').value = quiz.pointsPerQ;
   document.getElementById('quiz-timed').checked = quiz.timed !== false;
+  document.getElementById('quiz-timing-mode').value = quiz.timingMode || 'perQuestion';
+  document.getElementById('quiz-total-time').value = quiz.totalTime || 20;
   renderCreatorResultsPanel();
 }
 function saveDraft() {
@@ -537,6 +553,7 @@ function importQuiz(e) {
         d.questions = d.questions.slice(0, MAX_QUESTIONS);
       }
       quiz = d; quiz.timePerQ = quiz.timePerQ||30; quiz.pointsPerQ = quiz.pointsPerQ||10; quiz.timed = quiz.timed !== false;
+      quiz.timingMode = quiz.timingMode || 'perQuestion'; quiz.totalTime = quiz.totalTime || 20;
       selectedQIndex = d.questions.length>0?0:-1;
       loadQuizMeta(); renderSidebar(); renderEditor(); updateStatus(); clearSharePanel(); saveDraft();
       toast('Loaded: ' + quiz.title);
@@ -553,7 +570,7 @@ function showLobby(q) {
   document.getElementById('lobby-desc').textContent = q.desc || '';
   document.getElementById('lobby-pills').innerHTML = `
     <div class="meta-pill"><strong>${q.questions.length}</strong> Questions</div>
-    <div class="meta-pill"><strong>${q.timed === false ? 'No' : q.timePerQ + 's'}</strong> ${q.timed === false ? 'Timer' : 'per Q'}</div>
+    <div class="meta-pill"><strong>${q.timed === false ? 'No' : q.timingMode === 'total' ? (q.totalTime || 20) + ' min' : q.timePerQ + 's'}</strong> ${q.timed === false ? 'Timer' : q.timingMode === 'total' ? 'total' : 'per Q'}</div>
     <div class="meta-pill"><strong>${q.pointsPerQ} pts</strong> each</div>`;
   goTo('lobby');
 }
@@ -567,9 +584,12 @@ function startQuiz() {
   currentQ = 0;
   playerAnswers = new Array(activeQuiz.questions.length).fill(-1);
   playerSkipped = new Array(activeQuiz.questions.length).fill(false);
+  flaggedQuestions = new Set();
   quizStartedAt = new Date();
+  quizInProgress = true;
+  totalTimeMode = activeQuiz.timed !== false && activeQuiz.timingMode === 'total';
+  if (totalTimeMode) startGlobalTimer((activeQuiz.totalTime || 20) * 60);
   goTo('quiz'); loadQuestion();
-  renderQNavPanel();
 }
 
 function loadQuestion() {
@@ -587,7 +607,10 @@ function loadQuestion() {
       <span class="answer-key">${KEYS[i]}</span><span>${escHtml(opt)}</span>
     </button>`).join('');
   updateQuizStatus();
-  if (activeQuiz.timed === false) stopTimerDisplay(); else startTimer(q.time || activeQuiz.timePerQ);
+  updateFlagButton();
+  if (activeQuiz.timed === false) stopTimerDisplay();
+  else if (totalTimeMode) { /* global timer is already running, don't reset it per question */ }
+  else startTimer(q.time || activeQuiz.timePerQ);
 }
 
 function selectAnswer(idx) {
@@ -595,7 +618,6 @@ function selectAnswer(idx) {
   playerSkipped[currentQ] = false;
   document.querySelectorAll('.answer-btn').forEach((b,i) => b.classList.toggle('selected', i===idx));
   updateQuizStatus();
-  renderQNavPanel();
 }
 
 function nextQuestion() {
@@ -603,7 +625,8 @@ function nextQuestion() {
     confirmSubmit();
     return;
   }
-  clearInterval(timerInterval); currentQ++;
+  if (!totalTimeMode) clearInterval(timerInterval);
+  currentQ++;
   loadQuestion();
 }
 
@@ -614,41 +637,45 @@ function skipQuestion() {
     confirmSubmit();
     return;
   }
-  clearInterval(timerInterval); currentQ++;
+  if (!totalTimeMode) clearInterval(timerInterval);
+  currentQ++;
   loadQuestion();
 }
 
-let flaggedQuestions = new Set(); // reset to new Set() in startQuiz() / retakeQuiz()
-
-function toggleFlag() {
-  flaggedQuestions.has(currentQ) ? flaggedQuestions.delete(currentQ) : flaggedQuestions.add(currentQ);
-  updateFlagButton();
-  renderQuizNavDots(); // rename to whatever your q-nav-panel render function is
-}
-
-function updateFlagButton() {
-  const flagged = flaggedQuestions.has(currentQ);
-  const btn = document.getElementById('btn-flag');
-  btn.textContent = flagged ? ' Flagged' : ' Flag for Review';
-  btn.classList.toggle('btn-primary', flagged);
-}
-
 function confirmSubmit() {
-  clearInterval(timerInterval);
   updateQuizStatus();
   const answered = playerAnswers.filter(a => a !== -1).length;
   const skipped = playerSkipped.filter(Boolean).length;
-  const unanswered = playerAnswers.length - answered - skipped;
-  openConfirm(
-    'Submit Quiz?',
-    `You have answered ${answered} question${answered===1?'':'s'}, skipped ${skipped}, and left ${unanswered} unanswered. Submit now?`,
-    submitQuiz,
-    'Submit'
-  );
+  const unansweredIdx = playerAnswers
+    .map((a, i) => (a === -1 && !playerSkipped[i]) ? i : -1)
+    .filter(i => i !== -1);
+  const trulyUnanswered = playerAnswers.length - answered - skipped;
+
+  const body = document.getElementById('submit-modal-body');
+  const goBtn = document.getElementById('btn-review-unanswered');
+
+  if (trulyUnanswered > 0) {
+    body.textContent = `You have ${trulyUnanswered} unanswered question${trulyUnanswered===1?'':'s'} (plus ${skipped} skipped). Submit anyway?`;
+    goBtn.style.display = 'inline-flex';
+    goBtn.onclick = () => { closeSubmitModal(); jumpToQuestion(unansweredIdx[0]); };
+  } else {
+    body.textContent = skipped > 0
+      ? `You have ${skipped} skipped question${skipped===1?'':'s'}. Submit now?`
+      : 'All questions answered. Submit now?';
+    goBtn.style.display = 'none';
+  }
+
+  document.getElementById('btn-confirm-submit').onclick = () => { closeSubmitModal(); submitQuiz(); };
+  document.getElementById('submit-modal-bg').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submit-modal-bg').classList.remove('open');
 }
 
 function submitQuiz() {
   clearInterval(timerInterval);
+  quizInProgress = false;
   showResults();
 }
 
@@ -656,33 +683,48 @@ function updateQuizStatus() {
   const answered = playerAnswers.filter(a => a !== -1).length;
   const skipped = playerSkipped.filter(Boolean).length;
   const unanswered = playerAnswers.length - answered - skipped;
-  document.getElementById('answered-count').textContent = answered;
-  document.getElementById('unanswered-count').textContent = unanswered;
+  const flagged = flaggedQuestions.size;
   const status = document.getElementById('quiz-status');
   status.innerHTML = `
     <span class="quiz-status-chip"><strong id="answered-count">${answered}</strong> answered</span>
     <span class="quiz-status-chip"><strong id="unanswered-count">${unanswered}</strong> unanswered</span>
-    <span class="quiz-status-chip"><strong>${skipped}</strong> skipped</span>`;
+    <span class="quiz-status-chip"><strong>${skipped}</strong> skipped</span>
+    <span class="quiz-status-chip"><strong>${flagged}</strong> for review</span>`;
+  renderQuizNavDots();
 }
 
-function renderQNavPanel() {
+function toggleFlag() {
+  if (flaggedQuestions.has(currentQ)) flaggedQuestions.delete(currentQ);
+  else flaggedQuestions.add(currentQ);
+  updateFlagButton();
+  renderQuizNavDots();
+}
+
+function updateFlagButton() {
+  const flagged = flaggedQuestions.has(currentQ);
+  const btn = document.getElementById('btn-flag');
+  btn.textContent = flagged ? '🚩 Flagged for Review' : '🚩 Flag for Review';
+  btn.classList.toggle('flagged', flagged);
+}
+
+function renderQuizNavDots() {
   const panel = document.getElementById('q-nav-panel');
-  if (!panel) return;
-  panel.innerHTML = activeQuiz.questions.map((_, i) => {
-    const isAnswered = playerAnswers[i] !== -1;
-    const isSkipped = playerAnswers[i] === -1 && playerSkipped[i];
-    const isCurrent = i === currentQ;
+  if (!panel || !activeQuiz) return;
+  panel.innerHTML = activeQuiz.questions.map((q, i) => {
+    const isAnswered = playerAnswers[i] !== undefined && playerAnswers[i] !== -1;
+    const isFlagged = flaggedQuestions.has(i);
     let cls = 'q-nav-dot';
-    if (isAnswered) cls += ' answered';
-    else if (isSkipped) cls += ' skipped';
-    if (isCurrent) cls += ' current';
-    return `<button class="${cls}" onclick="jumpToQuestion(${i})" title="Question ${i+1}">${i+1}</button>`;
+    if (isFlagged) cls += ' review' + (isAnswered ? ' answered' : '');
+    else if (isAnswered) cls += ' answered';
+    else if (playerSkipped[i]) cls += ' skipped';
+    if (i === currentQ) cls += ' current';
+    return `<div class="${cls}" onclick="jumpToQuestion(${i})">${i+1}</div>`;
   }).join('');
 }
 
-function jumpToQuestion(idx) {
-  clearInterval(timerInterval);
-  currentQ = idx;
+function jumpToQuestion(i) {
+  if (!totalTimeMode) clearInterval(timerInterval);
+  currentQ = i;
   loadQuestion();
 }
 
@@ -698,6 +740,7 @@ function startTimer(seconds) {
   const circ = 145;
   function upd() {
     numEl.textContent = timeLeft;
+    numEl.style.fontSize = '';
     arc.style.strokeDashoffset = circ * (1 - timeLeft/seconds);
     ring.classList.remove('timer-warn','timer-danger');
     if (timeLeft <= 5) ring.classList.add('timer-danger');
@@ -705,6 +748,36 @@ function startTimer(seconds) {
   }
   upd();
   timerInterval = setInterval(() => { timeLeft--; upd(); if (timeLeft<=0) { clearInterval(timerInterval); advanceAfterTimeout(); } }, 1000);
+}
+
+function startGlobalTimer(totalSeconds) {
+  clearInterval(timerInterval);
+  quizTotalSeconds = totalSeconds;
+  timeLeft = totalSeconds;
+  const arc = document.getElementById('timer-arc');
+  const numEl = document.getElementById('timer-num');
+  const ring = document.getElementById('timer-ring');
+  ring.classList.remove('untimed');
+  const circ = 145;
+  function upd() {
+    const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+    numEl.textContent = m > 0 ? `${m}:${String(s).padStart(2,'0')}` : s;
+    numEl.style.fontSize = m > 0 ? '0.72rem' : '';
+    arc.style.strokeDashoffset = circ * (1 - timeLeft / quizTotalSeconds);
+    ring.classList.remove('timer-warn','timer-danger');
+    if (timeLeft <= 30) ring.classList.add('timer-danger');
+    else if (timeLeft <= Math.ceil(quizTotalSeconds * 0.2)) ring.classList.add('timer-warn');
+  }
+  upd();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    upd();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      toast("Time's up! Submitting your quiz.");
+      submitQuiz();
+    }
+  }, 1000);
 }
 
 function stopTimerDisplay() {

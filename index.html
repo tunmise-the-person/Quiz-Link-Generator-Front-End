@@ -72,7 +72,7 @@
     <h1 class="home-title">Build a quiz.<br><span class="highlight">Share the link.</span></h1>
     <p class="home-sub">Create up to 100-question timed quizzes. Generate a short link — sharable on WhatsApp, email, or SMS. No app needed for players.</p>
     <div class="home-actions">
-      <button class="btn btn-primary" onclick="goTo('builder')">✎ Build a Quiz</button>
+      <button class="btn btn-primary" onclick="goTo('builder')"> Build a Quiz</button>
     </div>
   </div>
 </div>
@@ -82,11 +82,11 @@
   <div class="topbar">
     <div class="logo">Quiz<span>Forge</span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <button class="btn btn-ghost btn-sm" onclick="goTo('home')">← Home</button>
-      <button class="btn btn-ghost btn-sm" onclick="exportQuiz()">⬇ Save File</button>
-      <button class="btn btn-ghost btn-sm" onclick="triggerImport()">⬆ Load File</button>
-      <button class="btn btn-ghost btn-sm" onclick="openApiModal()" title="Storage settings">⚙ Storage Key</button>
-      <button class="btn btn-primary btn-sm" onclick="generateShareLink()" id="btn-share">🔗 Get Share Link</button>
+      <button class="btn btn-ghost btn-sm" onclick="goTo('home')"> Home</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportQuiz()"> Save File</button>
+      <button class="btn btn-ghost btn-sm" onclick="triggerImport()"> Load File</button>
+      <button class="btn btn-ghost btn-sm" onclick="openApiModal()" title="Storage settings"> Storage Key</button>
+      <button class="btn btn-primary btn-sm" onclick="generateShareLink()" id="btn-share"> Get Share Link</button>
     </div>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importQuiz(event)">
   </div>
@@ -105,7 +105,7 @@
     <div class="q-editor">
       <!-- Share panel -->
       <div class="share-panel" id="share-panel">
-        <div class="share-panel-title">🔗 Your Quiz Link — Ready to Share</div>
+        <div class="share-panel-title"> Your Quiz Link — Ready to Share</div>
         <div class="share-url-row">
           <div class="share-url-box" id="share-url-box">—</div>
           <button class="btn btn-primary btn-sm" onclick="copyShareLink()">Copy</button>
@@ -116,15 +116,15 @@
             WhatsApp
           </button>
           <button class="btn btn-sm share-btn-email" onclick="shareVia('email')">
-            ✉ Email
+            Email
           </button>
           <button class="btn btn-sm share-btn-sms" onclick="shareVia('sms')">
-            💬 SMS
+            SMS
           </button>
         </div>
         <div class="share-note">
           <strong>Link is short and permanent.</strong> Anyone who opens it goes straight to your quiz.<br>
-          <span style="color:var(--warn)">⚠ Regenerate the link if you edit the quiz after sharing.</span>
+          <span style="color:var(--warn)"> Regenerate the link if you edit the quiz after sharing.</span>
         </div>
       </div>
 
@@ -154,6 +154,17 @@
               <input type="checkbox" id="quiz-timed" checked onchange="saveQuizMeta();clearSharePanel()" style="accent-color:var(--accent);width:16px;height:16px">
               <span style="font-size:0.9rem;color:var(--text)">Timed quiz</span>
             </div>
+          </div>
+          <div>
+            <label>Timing Mode</label>
+            <select id="quiz-timing-mode" onchange="saveQuizMeta();clearSharePanel()">
+              <option value="perQuestion">Per Question</option>
+              <option value="total">Total Quiz Time</option>
+            </select>
+          </div>
+          <div>
+            <label>Total Quiz Time (minutes)</label>
+            <input type="number" id="quiz-total-time" min="1" max="180" value="20" oninput="saveQuizMeta();clearSharePanel()">
           </div>
         </div>
       </div>

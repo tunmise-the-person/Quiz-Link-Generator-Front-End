@@ -249,3 +249,8 @@ select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  #time-per-question-field.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }

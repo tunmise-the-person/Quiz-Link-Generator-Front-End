@@ -361,9 +361,9 @@ function renderEditor() {
           ${[2,3,4].map(n => `<option value="${n}" ${n===q.options.length?'selected':''}>${n}</option>`).join('')}
           </select>
         </div>
-        <div class="field">
+        <div class="field" ${quiz.timingMode === 'total' ? 'style="opacity:0.5;pointer-events:none"' : ''}>
           <label>Time for This Question (seconds)</label>
-          <input type="number" id="q-time-input" min="5" max="600" value="${q.time||quiz.timePerQ}" oninput="saveCurrentEditor();clearSharePanel()">
+          <input type="number" id="q-time-input" min="5" max="600" value="${q.time||quiz.timePerQ}" oninput="saveCurrentEditor();clearSharePanel()" ${quiz.timingMode === 'total' ? 'disabled' : ''}>
         </div>
         <div class="field" style="display:flex;align-items:flex-end;gap:8px;padding-bottom:0">
           <button class="btn btn-ghost btn-sm" onclick="prevQ()" ${selectedQIndex===0?'disabled':''}>← Prev</button>

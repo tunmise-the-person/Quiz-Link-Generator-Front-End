@@ -250,6 +250,14 @@ function saveQuizMeta() {
   quiz.timed = document.getElementById('quiz-timed').checked;
   quiz.timingMode = document.getElementById('quiz-timing-mode').value;
   quiz.totalTime = parseInt(document.getElementById('quiz-total-time').value) || 20;
+
+  // Disable time-per-question field when timing mode is 'total'
+  const timePerQField = document.getElementById('time-per-question-field');
+  if (quiz.timingMode === 'total') {
+    timePerQField.classList.add('disabled');
+  } else {
+    timePerQField.classList.remove('disabled');
+  }
   saveDraft();
 }
 function loadQuizMeta() {
@@ -260,6 +268,13 @@ function loadQuizMeta() {
   document.getElementById('quiz-timed').checked = quiz.timed !== false;
   document.getElementById('quiz-timing-mode').value = quiz.timingMode || 'perQuestion';
   document.getElementById('quiz-total-time').value = quiz.totalTime || 20;
+  // Apply disabled state based on timing mode
+  const timePerQField = document.getElementById('time-per-question-field');
+  if (quiz.timingMode === 'total') {
+    timePerQField.classList.add('disabled');
+  } else {
+    timePerQField.classList.remove('disabled');
+  }
   renderCreatorResultsPanel();
 }
 function saveDraft() { /* quizzes are now saved from the library */ }
@@ -919,9 +934,12 @@ function startGlobalTimer(totalSeconds) {
     numEl.textContent = m > 0 ? `${m}:${String(s).padStart(2,'0')}` : s;
     numEl.style.fontSize = m > 0 ? '0.72rem' : '';
     arc.style.strokeDashoffset = circ * (1 - timeLeft / quizTotalSeconds);
-    ring.classList.remove('timer-warn','timer-danger');
-    if (timeLeft <= 30) ring.classList.add('timer-danger');
-    else if (timeLeft <= Math.ceil(quizTotalSeconds * 0.2)) ring.classList.add('timer-warn');
+    ring.classList.remove('timer-warn','timer-danger','critical');
+    if (timeLeft <= 600) {
+      ring.classList.add('critical');
+    } else if (timeLeft <= 30) {
+      ring.classList.add('timer-danger');
+    } else if (timeLeft <= Math.ceil(quizTotalSeconds * 0.2)) ring.classList.add('timer-warn');
   }
   upd();
   timerInterval = setInterval(() => {

@@ -6,6 +6,9 @@ const STORAGE_KEY_API = 'quizforge_apikey';
 const STORAGE_KEY_QUIZ = 'quizforge_draft';
 const STORAGE_KEY_PUBLIC_URL = 'quizforge_public_url';
 const DEFAULT_API_BASE = '';
+const STORAGE_KEY_LIBRARY = 'quizforge_library';
+const MAX_OPTIONS = 4;
+const MIN_OPTIONS = 2;
 
 // ════════════════════════════════════
 // STATE
@@ -27,6 +30,8 @@ let activeQuiz = null;
 let activeQuizBinId = '';
 let quizStartedAt = null;
 let pendingShareUrl = '';
+let currentLibId = '';
+let savedSnapshot = '';
 
 const KEYS = ['A','B','C','D'];
 
@@ -58,16 +63,8 @@ const KEYS = ['A','B','C','D'];
       return;
     }
   }
-  // Load saved draft
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY_QUIZ);
-    if (saved) { const d = JSON.parse(saved); if (d && d.questions) { quiz = d; } }
-  } catch(e) {}
+  migrateOldDraft();
   goTo('home');
-  loadQuizMeta();
-  renderSidebar();
-  renderEditor();
-  updateStatus();
 })();
 
 // ════════════════════════════════════
@@ -265,9 +262,7 @@ function loadQuizMeta() {
   document.getElementById('quiz-total-time').value = quiz.totalTime || 20;
   renderCreatorResultsPanel();
 }
-function saveDraft() {
-  try { localStorage.setItem(STORAGE_KEY_QUIZ, JSON.stringify(quiz)); } catch(e) {}
-}
+function saveDraft() { /* quizzes are now saved from the library */ }
 
 // ════════════════════════════════════
 // BUILDER — QUESTIONS
@@ -346,6 +341,12 @@ function renderEditor() {
       </div>
       <div class="settings-row">
         <div class="field">
+          <label>Number of Options</label>
+          <select id="q-opt-count" onchange="setOptionCount(parseInt(this.value))">
+          ${[2,3,4].map(n => `<option value="${n}" ${n===q.options.length?'selected':''}>${n}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
           <label>Time for This Question (seconds)</label>
           <input type="number" id="q-time-input" min="5" max="600" value="${q.time||quiz.timePerQ}" oninput="saveCurrentEditor();clearSharePanel()">
         </div>
@@ -415,7 +416,7 @@ async function generateShareLink() {
     const binId = saved.id;
     quiz.resultsBinId = saved.resultsBinId || quiz.resultsBinId;
     quiz.quizBinId = binId;
-    saveDraft();
+    saveCurrentToLibrary();
     const query = new URLSearchParams({ id: binId });
     const apiBase = getBackendBase();
     if (apiBase) query.set('api', apiBase);
@@ -527,6 +528,160 @@ async function exportCreatorResults() {
     toast(e.message || 'Could not export results.', 4000);
   }
 }
+
+// ════════════════════════════════════
+// OPTION COUNT
+// ════════════════════════════════════
+function setOptionCount(n) {
+  if (selectedQIndex < 0) return;
+  n = Math.min(MAX_OPTIONS, Math.max(MIN_OPTIONS, n || MAX_OPTIONS));
+  saveCurrentEditor();
+  const q = quiz.questions[selectedQIndex];
+  while (q.options.length < n) q.options.push('');
+  if (q.options.length > n) q.options.length = n;
+  if (q.correct >= n) q.correct = 0;
+  renderEditor(); clearSharePanel();
+}
+
+// ════════════════════════════════════
+// QUIZ LIBRARY
+// ════════════════════════════════════
+function getLibrary() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY_LIBRARY)) || []; }
+  catch(e) { return []; }
+}
+
+function setLibrary(lib) {
+  try { localStorage.setItem(STORAGE_KEY_LIBRARY, JSON.stringify(lib)); return true; }
+  catch(e) { toast('Could not save. Browser storage may be full.', 4000); return false; }
+}
+
+function upsertLibrary(q, id) {
+  const lib = getLibrary();
+  const entry = {
+    id,
+    title: q.title || 'Untitled quiz',
+    questionCount: q.questions.length,
+    updatedAt: Date.now(),
+    quiz: JSON.parse(JSON.stringify(q))
+  };
+  const i = lib.findIndex(x => x.id === id);
+  if (i >= 0) lib[i] = entry; else lib.push(entry);
+  return setLibrary(lib);
+}
+
+function saveCurrentToLibrary() {
+  saveCurrentEditor(); saveQuizMeta();
+  if (!currentLibId) currentLibId = makeId('LIB');
+  if (upsertLibrary(quiz, currentLibId)) savedSnapshot = JSON.stringify(quiz);
+}
+
+function saveQuizButton() {
+  saveCurrentToLibrary();
+  toast('Quiz saved.');
+}
+
+function migrateOldDraft() {
+  try {
+    const old = localStorage.getItem(STORAGE_KEY_QUIZ);
+    if (!old) return;
+    const d = JSON.parse(old);
+    if (d && Array.isArray(d.questions) && d.questions.length) {
+      if (!upsertLibrary(d, makeId('LIB'))) return;
+    }
+    localStorage.removeItem(STORAGE_KEY_QUIZ);
+  } catch(e) {}
+}
+
+function isDirty() {
+  return JSON.stringify(quiz) !== savedSnapshot;
+}
+
+function openLibrary() {
+  renderLibrary();
+  goTo('library');
+}
+
+function renderLibrary() {
+  const list = document.getElementById('lib-list');
+  const lib = getLibrary().sort((a, b) => b.updatedAt - a.updatedAt);
+  if (!lib.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div>No saved quizzes yet.</div><div style="margin-top:10px"><button class="btn btn-primary" onclick="startNewQuiz()">+ New Quiz</button></div></div>';
+    return;
+  }
+  list.innerHTML = lib.map(item => `
+    <div class="lib-card">
+      <div class="lib-info">
+        <div class="lib-title">${escHtml(item.title)}</div>
+        <div class="lib-meta">${item.questionCount} question${item.questionCount === 1 ? '' : 's'} · edited ${new Date(item.updatedAt).toLocaleString()}</div>
+      </div>
+      <div class="lib-actions">
+        <button class="btn btn-primary btn-sm" onclick="openLibraryQuiz('${item.id}')">Open</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteLibraryQuiz('${item.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function startNewQuiz() {
+  quiz = { title: 'My Quiz', desc: '', timePerQ: 30, pointsPerQ: 10, timed: true, questions: [] };
+  currentLibId = '';
+  selectedQIndex = -1;
+  openBuilder();
+}
+
+function openLibraryQuiz(id) {
+  const item = getLibrary().find(x => x.id === id);
+  if (!item) { toast('Quiz not found.'); return; }
+  quiz = JSON.parse(JSON.stringify(item.quiz));
+  currentLibId = id;
+  selectedQIndex = quiz.questions.length ? 0 : -1;
+  openBuilder();
+}
+
+function deleteLibraryQuiz(id) {
+  const item = getLibrary().find(x => x.id === id);
+  if (!item) return;
+  openConfirm('Delete Quiz', `Delete "${item.title}" from your library? This cannot be undone.`, () => {
+    setLibrary(getLibrary().filter(x => x.id !== id));
+    renderLibrary();
+  });
+}
+
+function openBuilder() {
+  clearSharePanel();
+  document.getElementById('creator-results-wrap').style.display = 'none';
+  loadQuizMeta(); renderSidebar(); renderEditor(); updateStatus();
+  savedSnapshot = JSON.stringify(quiz);
+  goTo('builder');
+}
+
+function closeQuiz() {
+  saveCurrentEditor(); saveQuizMeta();
+  if (!isDirty()) { openLibrary(); return; }
+  document.getElementById('close-modal-bg').classList.add('open');
+}
+
+function closeCloseModal() {
+  document.getElementById('close-modal-bg').classList.remove('open');
+}
+
+function closeQuizSave() {
+  saveCurrentToLibrary();
+  closeCloseModal();
+  toast('Quiz saved.');
+  openLibrary();
+}
+
+function closeQuizDiscard() {
+  closeCloseModal();
+  openLibrary();
+}
+
+window.addEventListener('beforeunload', e => {
+  if (!document.getElementById('screen-builder').classList.contains('active')) return;
+  saveCurrentEditor(); saveQuizMeta();
+  if (isDirty()) { e.preventDefault(); e.returnValue = ''; }
+});
 
 // ════════════════════════════════════
 // EXPORT / IMPORT

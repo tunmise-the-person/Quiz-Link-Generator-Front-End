@@ -29,6 +29,19 @@
   </div>
 </div>
 
+<!-- CLOSE QUIZ MODAL -->
+<div class="modal-bg" id="close-modal-bg">
+  <div class="confirm-modal">
+    <h3>Save this quiz?</h3>
+    <p>You have changes that are not saved.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeCloseModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="closeQuizDiscard()">Don't Save</button>
+      <button class="btn btn-primary" onclick="closeQuizSave()">Save &amp; Close</button>
+    </div>
+  </div>
+</div>
+  
 <!-- REFRESH CONFIRM MODAL -->
 <div class="modal-bg" id="refresh-modal-bg">
   <div class="confirm-modal">
@@ -86,8 +99,23 @@
     <h1 class="home-title">Build a quiz.<br><span class="highlight">Share the link.</span></h1>
     <p class="home-sub">Create up to 100-question timed quizzes. Generate a short link — sharable on WhatsApp, email, or SMS. No app needed for players.</p>
     <div class="home-actions">
-      <button class="btn btn-primary" onclick="goTo('builder')"> Build a Quiz</button>
+      <button class="btn btn-primary" onclick="openLibrary()">Build a Quiz</button>
     </div>
+  </div>
+</div>
+
+<!-- ══ LIBRARY ══ -->
+<div class="screen" id="screen-library">
+  <div class="topbar">
+    <div class="logo">Quiz<span>Forge</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('home')">← Home</button>
+      <button class="btn btn-primary btn-sm" onclick="startNewQuiz()">+ New Quiz</button>
+    </div>
+  </div>
+  <div class="library-body">
+    <div class="section-head">My Quizzes</div>
+    <div id="lib-list"></div>
   </div>
 </div>
 
@@ -96,7 +124,8 @@
   <div class="topbar">
     <div class="logo">Quiz<span>Forge</span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <button class="btn btn-ghost btn-sm" onclick="goTo('home')"> Home</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeQuiz()">Close Quiz</button>
+      <button class="btn btn-ghost btn-sm" onclick="saveQuizButton()">Save</button>
       <button class="btn btn-ghost btn-sm" onclick="exportQuiz()"> Save File</button>
       <button class="btn btn-ghost btn-sm" onclick="triggerImport()"> Load File</button>
       <button class="btn btn-ghost btn-sm" onclick="openApiModal()" title="Storage settings"> Storage Key</button>

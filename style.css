@@ -144,6 +144,22 @@ select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px
   .timer-warn .fg { stroke: var(--warn); }
   .timer-danger .fg { stroke: var(--danger); }
   .timer-danger .timer-num { color: var(--danger); }
+  @keyframes timer-glow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(244, 63, 94, 0.5), 0 0 20px rgba(244, 63, 94, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(244, 63, 94, 0.8), 0 0 40px rgba(244, 63, 94, 0.6);
+  }
+}
+  .timer-ring.critical .fg { 
+    stroke: var(--danger);
+    filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.8));
+  }
+  .timer-ring.critical .timer-num { 
+    color: var(--danger);
+    animation: timer-glow 1.2s ease-in-out infinite;
+  }
   .quiz-body { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 36px 24px; width: 100%; }
   .quiz-card { width: 100%; max-width: 640px; }
   .q-number { font-size: 0.78rem; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }

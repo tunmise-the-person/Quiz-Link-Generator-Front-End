@@ -7,16 +7,16 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
+ 
 <!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loading-overlay">
   <div class="spinner"></div>
   <div class="loading-text" id="loading-text">Saving quiz...</div>
 </div>
-
+ 
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
-
+ 
 <!-- CONFIRM MODAL -->
 <div class="modal-bg" id="confirm-modal-bg">
   <div class="confirm-modal">
@@ -28,7 +28,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- CLOSE QUIZ MODAL -->
 <div class="modal-bg" id="close-modal-bg">
   <div class="confirm-modal">
@@ -41,7 +41,7 @@
     </div>
   </div>
 </div>
-  
+   
 <!-- REFRESH CONFIRM MODAL -->
 <div class="modal-bg" id="refresh-modal-bg">
   <div class="confirm-modal">
@@ -53,7 +53,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- SUBMIT CONFIRM MODAL -->
 <div class="modal-bg" id="submit-modal-bg">
   <div class="confirm-modal">
@@ -66,7 +66,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- SHARE SETUP MODAL -->
 <div class="modal-bg" id="apikey-modal-bg">
   <div class="modal">
@@ -91,7 +91,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ══ HOME ══ -->
 <div class="screen active" id="screen-home">
   <div class="home-inner">
@@ -103,7 +103,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ══ LIBRARY ══ -->
 <div class="screen" id="screen-library">
   <div class="topbar">
@@ -118,7 +118,7 @@
     <div id="lib-list"></div>
   </div>
 </div>
-
+ 
 <!-- ══ BUILDER ══ -->
 <div class="screen" id="screen-builder">
   <div class="topbar">
@@ -155,7 +155,7 @@
         </div>
         <div class="share-buttons">
           <button class="btn btn-sm share-btn-wa" onclick="shareVia('whatsapp')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.197-.347.223-.644.074-.297-.149-1.257-.463-2.39-1.475-.883-.783-1.48-1.75-1.653-2.047-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.149-.173.198-.297.297-.495.099-.198.05-.371-.025-.521-.074-.149-.67-1.612-.916-2.208-.242-.58-.487-.5-.67-.51-.173-.008-.371-.01-.571-.01-.198 0-.521.074-.793.371-.273.297-1.045 1.02-1.045 2.485s1.071 2.876 1.219 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.262.49 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.718 2.006-1.414.248-.696.248-1.293.173-1.414-.074-.12-.273-.197-.571-.347z"/></svg>
             WhatsApp
           </button>
           <button class="btn btn-sm share-btn-email" onclick="shareVia('email')">
@@ -171,51 +171,60 @@
         </div>
       </div>
 
-      <!-- Quiz meta -->
-      <div class="meta-card">
-        <div class="builder-tabs">
-          <button class="tab-btn active" onclick="switchTab('editor')">Quiz Editor</button>
-          <button class="tab-btn" onclick="switchTab('results')">Quiz Results</button>
-        </div>
-        <div id="tab-editor" class="tab-content active">
-            <div class="meta-grid">
-              <div>
-                <label>Quiz Title</label>
-                <input type="text" id="quiz-title" placeholder="e.g. Biology Final" value="My Quiz" oninput="saveQuizMeta();clearSharePanel()">
+      <div class="builder-tabs">
+        <button class="tab-btn active" type="button" onclick="switchTab('editor')">Quiz Editor</button>
+        <button class="tab-btn" type="button" onclick="switchTab('results')">Quiz Results</button>
+      </div>
+
+      <div id="tab-editor" class="tab-content active">
+        <div class="meta-card">
+          <div class="section-head">Quiz Settings</div>
+          <div class="meta-grid">
+            <div>
+              <label>Quiz Title</label>
+              <input type="text" id="quiz-title" placeholder="e.g. Biology Final" value="My Quiz" oninput="saveQuizMeta();clearSharePanel()">
+            </div>
+            <div>
+              <label>Description (optional)</label>
+              <input type="text" id="quiz-desc" placeholder="A short description..." oninput="saveQuizMeta();clearSharePanel()">
+            </div>
+            <div id="time-per-question-field">
+              <label>Default Time per Question (sec)</label>
+              <input type="number" id="quiz-time" min="5" max="600" value="30" oninput="saveQuizMeta();clearSharePanel()">
+            </div>
+            <div>
+              <label>Points per Correct Answer</label>
+              <input type="number" id="quiz-points" min="1" max="100" value="10" oninput="saveQuizMeta();clearSharePanel()">
+            </div>
+            <div>
+              <label>Timing</label>
+              <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;min-height:42px">
+                <input type="checkbox" id="quiz-timed" checked onchange="saveQuizMeta();clearSharePanel()" style="accent-color:var(--accent);width:16px;height:16px">
+                <span style="font-size:0.9rem;color:var(--text)">Timed quiz</span>
               </div>
-              <div>
-                <label>Description (optional)</label>
-                <input type="text" id="quiz-desc" placeholder="A short description..." oninput="saveQuizMeta();clearSharePanel()">
-              </div>
-              <div id="time-per-question-field">
-                <label>Default Time per Question (sec)</label>
-                <input type="number" id="quiz-time" min="5" max="600" value="30" oninput="saveQuizMeta();clearSharePanel()">
-              </div>
-              <div>
-                <label>Points per Correct Answer</label>
-                <input type="number" id="quiz-points" min="1" max="100" value="10" oninput="saveQuizMeta();clearSharePanel()">
-              </div>
-              <div>
-                <label>Timing</label>
-                <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;min-height:42px">
-                  <input type="checkbox" id="quiz-timed" checked onchange="saveQuizMeta();clearSharePanel()" style="accent-color:var(--accent);width:16px;height:16px">
-                  <span style="font-size:0.9rem;color:var(--text)">Timed quiz</span>
-                </div>
-              </div>
-              <div>
-                <label>Timing Mode</label>
-                <select id="quiz-timing-mode" onchange="saveQuizMeta();clearSharePanel()">
-                  <option value="perQuestion">Per Question</option>
-                  <option value="total">Total Quiz Time</option>
-                </select>
-              </div>
-              <div>
-                <label>Total Quiz Time (minutes)</label>
-                <input type="number" id="quiz-total-time" min="1" max="180" value="20" oninput="saveQuizMeta();clearSharePanel()">
-              </div>
+            </div>
+            <div>
+              <label>Timing Mode</label>
+              <select id="quiz-timing-mode" onchange="saveQuizMeta();clearSharePanel()">
+                <option value="perQuestion">Per Question</option>
+                <option value="total">Total Quiz Time</option>
+              </select>
+            </div>
+            <div>
+              <label>Total Quiz Time (minutes)</label>
+              <input type="number" id="quiz-total-time" min="1" max="180" value="20" oninput="saveQuizMeta();clearSharePanel()">
             </div>
           </div>
         </div>
+
+        <div id="q-editor-area">
+          <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <div>No questions yet.</div>
+            <div style="margin-top:10px"><button class="btn btn-primary" onclick="addQuestion()">+ Add First Question</button></div>
+          </div>
+        </div>
+      </div>
 
       <div id="tab-results" class="tab-content">
         <div class="share-panel" id="results-panel">
@@ -235,14 +244,6 @@
           </div>
         </div>
       </div>
-
-      <div id="q-editor-area">
-        <div class="empty-state">
-          <div class="empty-icon">📝</div>
-          <div>No questions yet.</div>
-          <div style="margin-top:10px"><button class="btn btn-primary" onclick="addQuestion()">+ Add First Question</button></div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -253,7 +254,7 @@
     <button class="btn btn-primary" onclick="generateShareLink()"> Get Share Link</button>
   </div>
 </div>
-
+ 
 <!-- ══ LOBBY ══ -->
 <div class="screen" id="screen-lobby">
   <div style="flex:1;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 20%,rgba(99,102,241,0.1) 0%,transparent 50%),var(--bg)">
@@ -270,7 +271,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ══ QUIZ ══ -->
 <div class="screen" id="screen-quiz">
   <div class="quiz-topbar">
@@ -305,7 +306,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ══ RESULTS ══ -->
 <div class="screen" id="screen-results">
   <div class="results-inner">
@@ -327,16 +328,15 @@
     <div style="text-align: center; margin: 24px 0;">
       <button class="btn btn-primary" id="btn-see-answers" onclick="toggleAnswersReview()">See Answers</button>
     </div>
-<div class="answers-review" id="answers-review" style="display:none;"></div>
     <div class="section-head">Answer Review</div>
-    <div class="answers-review" id="answers-review"></div>
+    <div class="answers-review" id="answers-review" style="display:none;"></div>
     <div class="results-actions">
       <button class="btn btn-ghost" onclick="retakeQuiz()"> Retake</button>
       <button class="btn btn-ghost" onclick="goTo('home')">Home</button>
     </div>
   </div>
 </div>
-
+ 
 <!-- ══ ERROR ══ -->
 <div class="screen" id="screen-error">
   <div class="error-card">
@@ -346,8 +346,8 @@
     <button class="btn btn-primary" onclick="goTo('home')">Go Home</button>
   </div>
 </div>
-
+ 
 <script src="script.js" defer></script>
-
+ 
 </body>
 </html>

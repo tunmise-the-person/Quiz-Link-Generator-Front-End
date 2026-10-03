@@ -1057,6 +1057,19 @@ function showResults() {
   submitAttempt({ correct, wrong, skipped, unanswered, score, maxScore, percent: pct });
 }
 
+function toggleAnswersReview() {
+  const reviewDiv = document.getElementById('answers-review');
+  const btn = document.getElementById('btn-see-answers');
+  
+  if (reviewDiv.style.display === 'none') {
+    reviewDiv.style.display = 'block';
+    btn.textContent = 'Hide Answers';
+  } else {
+    reviewDiv.style.display = 'none';
+    btn.textContent = 'See Answers';
+  }
+}
+
 function retakeQuiz() { showLobby(activeQuiz); }
 
 async function submitAttempt(summary) {

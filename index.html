@@ -1,220 +1,341 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QuizForge</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizForge</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="loading-overlay" id="loading-overlay">
-    <div class="spinner"></div>
-    <div class="loading-text" id="loading-text">Saving quiz...</div>
-  </div>
 
-  <div class="toast-wrap" id="toast-wrap"></div>
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Saving quiz...</div>
+</div>
 
-  <div class="screen active" id="screen-home">
-    <div class="home-inner">
-      <div class="home-badge">Quiz Builder &amp; Player</div>
-      <h1 class="home-title">Build a quiz.<br /><span class="highlight">Share the link.</span></h1>
-      <p class="home-sub">Create up to 100-question timed quizzes. Generate a short link and share it with anyone.</p>
-      <div class="home-actions">
-        <button class="btn btn-primary" onclick="openLibrary()">Build a Quiz</button>
-      </div>
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-bg" id="confirm-modal-bg">
+  <div class="confirm-modal">
+    <h3 id="confirm-title">Are you sure?</h3>
+    <p id="confirm-body">This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok">Delete</button>
     </div>
   </div>
+</div>
 
-  <div class="screen" id="screen-library">
-    <div class="topbar">
-      <div class="logo">Quiz<span>Forge</span></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button class="btn btn-ghost btn-sm" onclick="goTo('home')">← Home</button>
-        <button class="btn btn-primary btn-sm" onclick="startNewQuiz()">+ New Quiz</button>
-      </div>
-    </div>
-    <div class="library-body">
-      <div class="section-head">My Quizzes</div>
-      <div id="lib-list"></div>
+<!-- CLOSE QUIZ MODAL -->
+<div class="modal-bg" id="close-modal-bg">
+  <div class="confirm-modal">
+    <h3>Save this quiz?</h3>
+    <p>You have changes that are not saved.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeCloseModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="closeQuizDiscard()">Don't Save</button>
+      <button class="btn btn-primary" onclick="closeQuizSave()">Save &amp; Close</button>
     </div>
   </div>
+</div>
+  
+<!-- REFRESH CONFIRM MODAL -->
+<div class="modal-bg" id="refresh-modal-bg">
+  <div class="confirm-modal">
+    <h3>Refresh this page?</h3>
+    <p>Reloading will restart your session and any unsaved progress may be lost.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cancelRefresh()">No</button>
+      <button class="btn btn-danger" onclick="confirmRefresh()">Yes</button>
+    </div>
+  </div>
+</div>
 
-  <div class="screen" id="screen-builder">
-    <div class="topbar">
-      <div class="logo">Quiz<span>Forge</span></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button class="btn btn-ghost btn-sm" onclick="goTo('library')">← Library</button>
-        <button class="btn btn-ghost btn-sm" onclick="saveQuizButton()">Save</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportQuiz()">Save File</button>
-        <button class="btn btn-ghost btn-sm" onclick="triggerImport()">Load File</button>
-        <button class="btn btn-primary btn-sm" onclick="generateShareLink()" id="btn-share">Get Share Link</button>
+<!-- SUBMIT CONFIRM MODAL -->
+<div class="modal-bg" id="submit-modal-bg">
+  <div class="confirm-modal">
+    <h3>Submit quiz?</h3>
+    <p id="submit-modal-body">Are you sure you want to submit?</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btn-review-unanswered" style="display:none">Go to Unanswered</button>
+      <button class="btn btn-ghost" onclick="closeSubmitModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-confirm-submit">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE SETUP MODAL -->
+<div class="modal-bg" id="apikey-modal-bg">
+  <div class="modal">
+    <h3>Set Up Sharing</h3>
+    <p>QuizForge now uses your backend to store quizzes securely. Keep your JSONBin key on the server, not in this public HTML file.</p>
+    <div class="api-steps">
+      <ol>
+        <li>Deploy the included backend with your <strong>JSONBIN_API_KEY</strong> environment variable.</li>
+        <li>If the backend is hosted somewhere else, paste its public URL below.</li>
+        <li>Paste the public URL for this quiz page so shared links open the right site.</li>
+      </ol>
+    </div>
+    <label>Backend API URL</label>
+    <input type="text" id="apikey-input" placeholder="Leave blank for same-site backend, or https://api.your-site.com" style="font-family:monospace;font-size:0.85rem">
+    <label style="margin-top:14px">Public Quiz Page URL</label>
+    <input type="text" id="public-url-input" placeholder="https://your-site.com/quiz.html" style="font-family:monospace;font-size:0.85rem">
+    <div class="hint-text">Use the web address where this quiz.html file is hosted, so links work from WhatsApp, email, and SMS.</div>
+    <div class="api-key-saved" id="apikey-saved">✓ Share settings saved</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeApiModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Save Settings & Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HOME ══ -->
+<div class="screen active" id="screen-home">
+  <div class="home-inner">
+    <div class="home-badge">Quiz Builder & Player</div>
+    <h1 class="home-title">Build a quiz.<br><span class="highlight">Share the link.</span></h1>
+    <p class="home-sub">Create up to 100-question timed quizzes. Generate a short link — sharable on WhatsApp, email, or SMS. No app needed for players.</p>
+    <div class="home-actions">
+      <button class="btn btn-primary" onclick="openLibrary()">Build a Quiz</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LIBRARY ══ -->
+<div class="screen" id="screen-library">
+  <div class="topbar">
+    <div class="logo">Quiz<span>Forge</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('home')">← Home</button>
+      <button class="btn btn-primary btn-sm" onclick="startNewQuiz()">+ New Quiz</button>
+    </div>
+  </div>
+  <div class="library-body">
+    <div class="section-head">My Quizzes</div>
+    <div id="lib-list"></div>
+  </div>
+</div>
+
+<!-- ══ BUILDER ══ -->
+<div class="screen" id="screen-builder">
+  <div class="topbar">
+    <div class="logo">Quiz<span>Forge</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="closeQuiz()">Close Quiz</button>
+      <button class="btn btn-ghost btn-sm" onclick="saveQuizButton()">Save</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportQuiz()"> Save File</button>
+      <button class="btn btn-ghost btn-sm" onclick="triggerImport()"> Load File</button>
+      <button class="btn btn-ghost btn-sm" onclick="openApiModal()" title="Storage settings"> Storage Key</button>
+      <button class="btn btn-primary btn-sm" onclick="generateShareLink()" id="btn-share"> Get Share Link</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importQuiz(event)">
+  </div>
+
+  <div class="builder-body">
+    <!-- Sidebar -->
+    <div class="q-sidebar">
+      <div class="q-sidebar-header">
+        <span class="q-sidebar-title">Questions <span id="q-count-badge" style="color:var(--accent-light)"></span></span>
+        <button class="btn btn-primary btn-icon" onclick="addQuestion()" title="Add question">+</button>
       </div>
+      <div id="q-list"></div>
     </div>
 
-    <div class="builder-body">
-      <div class="q-sidebar">
-        <div class="q-sidebar-header">
-          <span class="q-sidebar-title">Questions <span id="q-count-badge" style="color:var(--accent-light)"></span></span>
-          <button class="btn btn-primary btn-icon" onclick="addQuestion()" title="Add question">+</button>
+    <!-- Editor -->
+    <div class="q-editor">
+      <!-- Share panel -->
+      <div class="share-panel" id="share-panel">
+        <div class="share-panel-title"> Your Quiz Link — Ready to Share</div>
+        <div class="share-url-row">
+          <div class="share-url-box" id="share-url-box">—</div>
+          <button class="btn btn-primary btn-sm" onclick="copyShareLink()">Copy</button>
         </div>
-        <div id="q-list"></div>
+        <div class="share-buttons">
+          <button class="btn btn-sm share-btn-wa" onclick="shareVia('whatsapp')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            WhatsApp
+          </button>
+          <button class="btn btn-sm share-btn-email" onclick="shareVia('email')">
+            Email
+          </button>
+          <button class="btn btn-sm share-btn-sms" onclick="shareVia('sms')">
+            SMS
+          </button>
+        </div>
+        <div class="share-note">
+          <strong>Link is short and permanent.</strong> Anyone who opens it goes straight to your quiz.<br>
+          <span style="color:var(--warn)"> Regenerate the link if you edit the quiz after sharing.</span>
+        </div>
       </div>
 
-      <div class="q-editor">
-        <div class="meta-card">
-          <div class="section-head">Quiz Settings</div>
-          <div class="meta-grid">
-            <div>
-              <label>Quiz Title</label>
-              <input type="text" id="quiz-title" placeholder="e.g. Biology Final" value="My Quiz" oninput="saveQuizMeta();clearSharePanel()" />
-            </div>
-            <div>
-              <label>Description (optional)</label>
-              <input type="text" id="quiz-desc" placeholder="A short description..." oninput="saveQuizMeta();clearSharePanel()" />
-            </div>
-            <div id="time-per-question-field">
-              <label>Default Time per Question (sec)</label>
-              <input type="number" id="quiz-time" min="5" max="600" value="30" oninput="saveQuizMeta();clearSharePanel()" />
-            </div>
-            <div>
-              <label>Points per Correct Answer</label>
-              <input type="number" id="quiz-points" min="1" max="100" value="10" oninput="saveQuizMeta();clearSharePanel()" />
-            </div>
-            <div>
-              <label>Timing</label>
-              <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;min-height:42px">
-                <input type="checkbox" id="quiz-timed" checked onchange="saveQuizMeta();clearSharePanel()" style="accent-color:var(--accent);width:16px;height:16px" />
-                <span style="font-size:0.9rem;color:var(--text)">Timed quiz</span>
-              </div>
-            </div>
-            <div>
-              <label>Timing Mode</label>
-              <select id="quiz-timing-mode" onchange="saveQuizMeta();clearSharePanel()">
-                <option value="perQuestion">Per Question</option>
-                <option value="total">Total Quiz Time</option>
-              </select>
-            </div>
-            <div>
-              <label>Total Quiz Time (minutes)</label>
-              <input type="number" id="quiz-total-time" min="1" max="180" value="20" oninput="saveQuizMeta();clearSharePanel()" />
+      <!-- Quiz meta -->
+      <div class="meta-card">
+        <div class="section-head">Quiz Settings</div>
+        <div class="meta-grid">
+          <div>
+            <label>Quiz Title</label>
+            <input type="text" id="quiz-title" placeholder="e.g. Biology Final" value="My Quiz" oninput="saveQuizMeta();clearSharePanel()">
+          </div>
+          <div>
+            <label>Description (optional)</label>
+            <input type="text" id="quiz-desc" placeholder="A short description..." oninput="saveQuizMeta();clearSharePanel()">
+          </div>
+          <div id="time-per-question-field">
+            <label>Default Time per Question (sec)</label>
+            <input type="number" id="quiz-time" min="5" max="600" value="30" oninput="saveQuizMeta();clearSharePanel()">
+          </div>
+          <div>
+            <label>Points per Correct Answer</label>
+            <input type="number" id="quiz-points" min="1" max="100" value="10" oninput="saveQuizMeta();clearSharePanel()">
+          </div>
+          <div>
+            <label>Timing</label>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;min-height:42px">
+              <input type="checkbox" id="quiz-timed" checked onchange="saveQuizMeta();clearSharePanel()" style="accent-color:var(--accent);width:16px;height:16px">
+              <span style="font-size:0.9rem;color:var(--text)">Timed quiz</span>
             </div>
           </div>
-        </div>
-
-        <div class="share-panel" id="share-panel">
-          <div class="share-panel-title">Your Quiz Link — Ready to Share</div>
-          <div class="share-url-row">
-            <div class="share-url-box" id="share-url-box">—</div>
-            <button class="btn btn-primary btn-sm" onclick="copyShareLink()">Copy</button>
+          <div>
+            <label>Timing Mode</label>
+            <select id="quiz-timing-mode" onchange="saveQuizMeta();clearSharePanel()">
+              <option value="perQuestion">Per Question</option>
+              <option value="total">Total Quiz Time</option>
+            </select>
           </div>
-          <div class="share-buttons">
-            <button class="btn btn-sm share-btn-wa" onclick="shareVia('whatsapp')">WhatsApp</button>
-            <button class="btn btn-sm share-btn-email" onclick="shareVia('email')">Email</button>
-            <button class="btn btn-sm share-btn-sms" onclick="shareVia('sms')">SMS</button>
-          </div>
-          <div class="share-note">
-            <strong>Link is short and permanent.</strong> Anyone who opens it goes straight to your quiz.<br />
-            <span style="color:var(--warn)">Regenerate the link if you edit the quiz after sharing.</span>
+          <div>
+            <label>Total Quiz Time (minutes)</label>
+            <input type="number" id="quiz-total-time" min="1" max="180" value="20" oninput="saveQuizMeta();clearSharePanel()">
           </div>
         </div>
-
-        <div id="q-editor-area"></div>
       </div>
-    </div>
 
-    <div class="toolbar">
-      <span style="color:var(--muted);font-size:0.82rem" id="builder-status">No questions added.</span>
-      <div class="toolbar-spacer"></div>
-      <button class="btn btn-ghost" onclick="addQuestion()">+ Add Question</button>
-      <button class="btn btn-primary" onclick="generateShareLink()">Get Share Link</button>
-    </div>
-  </div>
-
-  <div class="screen" id="screen-lobby">
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 20%,rgba(99,102,241,0.1) 0%,transparent 50%),var(--bg)">
-      <div class="lobby-card">
-        <div class="lobby-eyebrow">QUIZ</div>
-        <div id="lobby-title" class="lobby-title">My Quiz</div>
-        <div id="lobby-desc" class="lobby-meta"></div>
-        <div class="meta-pills" id="lobby-pills"></div>
-        <div class="name-input-wrap">
-          <label>Your Name (optional)</label>
-          <input type="text" id="player-name" placeholder="Enter your name..." maxlength="40" />
+      <div class="share-panel" id="results-panel">
+        <div class="share-panel-title">Quiz Results</div>
+        <div class="share-buttons">
+          <button class="btn btn-sm btn-primary" onclick="refreshCreatorResults()">Refresh Results</button>
+          <button class="btn btn-sm btn-ghost" onclick="exportCreatorResults()">Save CSV</button>
         </div>
-        <button class="btn btn-success" style="width:100%;padding:14px;font-size:1rem" onclick="startQuiz()">Start Quiz →</button>
+        <div class="share-note" id="results-note">Generate a share link first to start collecting scores.</div>
+        <div class="results-table-wrap" id="creator-results-wrap" style="display:none;margin-top:12px">
+          <table class="results-table">
+            <thead>
+              <tr><th>Player ID</th><th>Name</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Skipped</th><th>Unanswered</th><th>Submitted</th></tr>
+            </thead>
+            <tbody id="creator-results-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="q-editor-area">
+        <div class="empty-state">
+          <div class="empty-icon">📝</div>
+          <div>No questions yet.</div>
+          <div style="margin-top:10px"><button class="btn btn-primary" onclick="addQuestion()">+ Add First Question</button></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="screen" id="screen-quiz">
-    <div class="quiz-topbar">
-      <div class="timer-ring" id="timer-ring">
-        <svg width="56" height="56" viewBox="0 0 56 56">
-          <circle class="bg" cx="28" cy="28" r="23"></circle>
-          <circle class="fg" cx="28" cy="28" r="23" id="timer-arc"></circle>
+  <div class="toolbar">
+    <span style="color:var(--muted);font-size:0.82rem" id="builder-status">No questions added.</span>
+    <div class="toolbar-spacer"></div>
+    <button class="btn btn-ghost" onclick="addQuestion()">+ Add Question</button>
+    <button class="btn btn-primary" onclick="generateShareLink()"> Get Share Link</button>
+  </div>
+</div>
+
+<!-- ══ LOBBY ══ -->
+<div class="screen" id="screen-lobby">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 20%,rgba(99,102,241,0.1) 0%,transparent 50%),var(--bg)">
+    <div class="lobby-card">
+      <div class="lobby-eyebrow">QUIZ</div>
+      <div id="lobby-title" class="lobby-title">My Quiz</div>
+      <div id="lobby-desc" class="lobby-meta"></div>
+      <div class="meta-pills" id="lobby-pills"></div>
+      <div class="name-input-wrap">
+        <label>Your Name (optional)</label>
+        <input type="text" id="player-name" placeholder="Enter your name..." maxlength="40">
+      </div>
+      <button class="btn btn-success" style="width:100%;padding:14px;font-size:1rem" onclick="startQuiz()">Start Quiz →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ QUIZ ══ -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-topbar">
+    <div class="timer-ring" id="timer-ring">
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle class="bg" cx="28" cy="28" r="23"/>
+        <circle class="fg" cx="28" cy="28" r="23" id="timer-arc"/>
+      </svg>
+      <div class="timer-num" id="timer-num">30</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="q-counter" id="q-counter">1 / 1</div>
+    <div class="quiz-status" id="quiz-status">
+      <span class="quiz-status-chip"><strong id="answered-count">0</strong> answered</span>
+      <span class="quiz-status-chip"><strong id="unanswered-count">0</strong> unanswered</span>
+    </div>
+  </div>
+  <div class="q-nav-panel" id="q-nav-panel"></div>
+  <div class="quiz-body">
+    <div class="quiz-card">
+      <div class="q-number" id="q-label">Question 1</div>
+      <div class="q-text" id="q-text">Loading...</div>
+      <div class="answer-grid" id="answer-grid"></div>
+      <div class="quiz-nav">
+        <button class="btn btn-ghost" id="btn-flag" onclick="toggleFlag()">Flag for Review</button>
+        <button class="btn btn-ghost" id="btn-skip" onclick="skipQuestion()">Skip</button>
+        <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="screen" id="screen-results">
+  <div class="results-inner">
+    <div class="results-hero">
+      <div class="score-ring">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <circle class="bg" cx="70" cy="70" r="60"/>
+          <circle class="fg" id="score-arc" cx="70" cy="70" r="60" stroke-dashoffset="377"/>
         </svg>
-        <div class="timer-num" id="timer-num">30</div>
-      </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-      </div>
-      <div class="q-counter" id="q-counter">1 / 1</div>
-      <div class="quiz-status" id="quiz-status">
-        <span class="quiz-status-chip"><strong id="answered-count">0</strong> answered</span>
-        <span class="quiz-status-chip"><strong id="unanswered-count">0</strong> unanswered</span>
-      </div>
-    </div>
-    <div class="q-nav-panel" id="q-nav-panel"></div>
-    <div class="quiz-body">
-      <div class="quiz-card">
-        <div class="q-number" id="q-label">Question 1</div>
-        <div class="q-text" id="q-text">Loading...</div>
-        <div class="answer-grid" id="answer-grid"></div>
-        <div class="quiz-nav">
-          <button class="btn btn-ghost" id="btn-flag" onclick="toggleFlag()">Flag for Review</button>
-          <button class="btn btn-ghost" id="btn-skip" onclick="skipQuestion()">Skip</button>
-          <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()">Next</button>
+        <div class="score-num">
+          <div class="score-big" id="score-pct">0%</div>
+          <div class="score-label">Score</div>
         </div>
       </div>
+      <h2 class="results-title" id="results-title">Well done!</h2>
+      <p class="results-sub" id="results-sub"></p>
+      <div class="score-stats" id="score-stats"></div>
+    </div>
+    <div class="section-head">Answer Review</div>
+    <div class="answers-review" id="answers-review"></div>
+    <div class="results-actions">
+      <button class="btn btn-ghost" onclick="retakeQuiz()"> Retake</button>
+      <button class="btn btn-ghost" onclick="goTo('home')">Home</button>
     </div>
   </div>
+</div>
 
-  <div class="screen" id="screen-results">
-    <div class="results-inner">
-      <div class="results-hero">
-        <div class="score-ring">
-          <svg width="140" height="140" viewBox="0 0 140 140">
-            <circle class="bg" cx="70" cy="70" r="60"></circle>
-            <circle class="fg" id="score-arc" cx="70" cy="70" r="60" stroke-dashoffset="377"></circle>
-          </svg>
-          <div class="score-num">
-            <div class="score-big" id="score-pct">0%</div>
-            <div class="score-label">Score</div>
-          </div>
-        </div>
-        <h2 class="results-title" id="results-title">Well done!</h2>
-        <p class="results-sub" id="results-sub"></p>
-        <div class="score-stats" id="score-stats"></div>
-      </div>
-      <div class="section-head">Answer Review</div>
-      <div class="answers-review" id="answers-review"></div>
-      <div class="results-actions">
-        <button class="btn btn-ghost" onclick="retakeQuiz()">Retake</button>
-        <button class="btn btn-ghost" onclick="goTo('home')">Home</button>
-      </div>
-    </div>
+<!-- ══ ERROR ══ -->
+<div class="screen" id="screen-error">
+  <div class="error-card">
+    <div class="error-icon">⚠️</div>
+    <div class="error-title">Couldn't Load Quiz</div>
+    <div class="error-msg" id="error-msg">The link may be broken or the quiz may have expired.</div>
+    <button class="btn btn-primary" onclick="goTo('home')">Go Home</button>
   </div>
+</div>
 
-  <div class="screen" id="screen-error">
-    <div class="error-card">
-      <div class="error-icon">⚠️</div>
-      <div class="error-title">Couldn't Load Quiz</div>
-      <div class="error-msg" id="error-msg">The link may be broken or the quiz may have expired.</div>
-      <button class="btn btn-primary" onclick="goTo('home')">Go Home</button>
-    </div>
-  </div>
+<script src="script.js" defer></script>
 
-  <input type="file" id="import-file" accept=".json" style="display:none" onchange="importQuiz(event)" />
-  <script src="script.js" defer></script>
 </body>
 </html>

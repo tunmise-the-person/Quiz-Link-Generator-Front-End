@@ -173,59 +173,67 @@
 
       <!-- Quiz meta -->
       <div class="meta-card">
-        <div class="section-head">Quiz Settings</div>
-        <div class="meta-grid">
-          <div>
-            <label>Quiz Title</label>
-            <input type="text" id="quiz-title" placeholder="e.g. Biology Final" value="My Quiz" oninput="saveQuizMeta();clearSharePanel()">
-          </div>
-          <div>
-            <label>Description (optional)</label>
-            <input type="text" id="quiz-desc" placeholder="A short description..." oninput="saveQuizMeta();clearSharePanel()">
-          </div>
-          <div id="time-per-question-field">
-            <label>Default Time per Question (sec)</label>
-            <input type="number" id="quiz-time" min="5" max="600" value="30" oninput="saveQuizMeta();clearSharePanel()">
-          </div>
-          <div>
-            <label>Points per Correct Answer</label>
-            <input type="number" id="quiz-points" min="1" max="100" value="10" oninput="saveQuizMeta();clearSharePanel()">
-          </div>
-          <div>
-            <label>Timing</label>
-            <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;min-height:42px">
-              <input type="checkbox" id="quiz-timed" checked onchange="saveQuizMeta();clearSharePanel()" style="accent-color:var(--accent);width:16px;height:16px">
-              <span style="font-size:0.9rem;color:var(--text)">Timed quiz</span>
+        <div class="builder-tabs">
+          <button class="tab-btn active" onclick="switchTab('editor')">Quiz Editor</button>
+          <button class="tab-btn" onclick="switchTab('results')">Quiz Results</button>
+        </div>
+        <div id="tab-editor" class="tab-content active">
+          <div class="section-head">Quiz Settings</div>
+            <div class="meta-grid">
+              <div>
+                <label>Quiz Title</label>
+                <input type="text" id="quiz-title" placeholder="e.g. Biology Final" value="My Quiz" oninput="saveQuizMeta();clearSharePanel()">
+              </div>
+              <div>
+                <label>Description (optional)</label>
+                <input type="text" id="quiz-desc" placeholder="A short description..." oninput="saveQuizMeta();clearSharePanel()">
+              </div>
+              <div id="time-per-question-field">
+                <label>Default Time per Question (sec)</label>
+                <input type="number" id="quiz-time" min="5" max="600" value="30" oninput="saveQuizMeta();clearSharePanel()">
+              </div>
+              <div>
+                <label>Points per Correct Answer</label>
+                <input type="number" id="quiz-points" min="1" max="100" value="10" oninput="saveQuizMeta();clearSharePanel()">
+              </div>
+              <div>
+                <label>Timing</label>
+                <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;min-height:42px">
+                  <input type="checkbox" id="quiz-timed" checked onchange="saveQuizMeta();clearSharePanel()" style="accent-color:var(--accent);width:16px;height:16px">
+                  <span style="font-size:0.9rem;color:var(--text)">Timed quiz</span>
+                </div>
+              </div>
+              <div>
+                <label>Timing Mode</label>
+                <select id="quiz-timing-mode" onchange="saveQuizMeta();clearSharePanel()">
+                  <option value="perQuestion">Per Question</option>
+                  <option value="total">Total Quiz Time</option>
+                </select>
+              </div>
+              <div>
+                <label>Total Quiz Time (minutes)</label>
+                <input type="number" id="quiz-total-time" min="1" max="180" value="20" oninput="saveQuizMeta();clearSharePanel()">
+              </div>
             </div>
           </div>
-          <div>
-            <label>Timing Mode</label>
-            <select id="quiz-timing-mode" onchange="saveQuizMeta();clearSharePanel()">
-              <option value="perQuestion">Per Question</option>
-              <option value="total">Total Quiz Time</option>
-            </select>
-          </div>
-          <div>
-            <label>Total Quiz Time (minutes)</label>
-            <input type="number" id="quiz-total-time" min="1" max="180" value="20" oninput="saveQuizMeta();clearSharePanel()">
-          </div>
         </div>
-      </div>
 
-      <div class="share-panel" id="results-panel">
-        <div class="share-panel-title">Quiz Results</div>
-        <div class="share-buttons">
-          <button class="btn btn-sm btn-primary" onclick="refreshCreatorResults()">Refresh Results</button>
-          <button class="btn btn-sm btn-ghost" onclick="exportCreatorResults()">Save CSV</button>
-        </div>
-        <div class="share-note" id="results-note">Generate a share link first to start collecting scores.</div>
-        <div class="results-table-wrap" id="creator-results-wrap" style="display:none;margin-top:12px">
-          <table class="results-table">
-            <thead>
-              <tr><th>Player ID</th><th>Name</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Skipped</th><th>Unanswered</th><th>Submitted</th></tr>
-            </thead>
-            <tbody id="creator-results-body"></tbody>
-          </table>
+      <div id="tab-results" class="tab-content">
+        <div class="share-panel" id="results-panel">
+          <div class="share-panel-title">Quiz Results</div>
+          <div class="share-buttons">
+            <button class="btn btn-sm btn-primary" onclick="refreshCreatorResults()">Refresh Results</button>
+            <button class="btn btn-sm btn-ghost" onclick="exportCreatorResults()">Save CSV</button>
+          </div>
+          <div class="share-note" id="results-note">Generate a share link first to start collecting scores.</div>
+          <div class="results-table-wrap" id="creator-results-wrap" style="display:none;margin-top:12px">
+            <table class="results-table">
+              <thead>
+                <tr><th>Player ID</th><th>Name</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Skipped</th><th>Unanswered</th><th>Submitted</th></tr>
+              </thead>
+              <tbody id="creator-results-body"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 

@@ -251,37 +251,42 @@ function saveQuizMeta() {
   quiz.timingMode = document.getElementById('quiz-timing-mode').value;
   quiz.totalTime = parseInt(document.getElementById('quiz-total-time').value) || 20;
 
-  // Update disabled states for timing fields
   updateTimingFieldStates();
   saveDraft();
 }
 
 function updateTimingFieldStates() {
   const isTimed = document.getElementById('quiz-timed').checked;
-  const timingModeField = document.querySelector('div:has(> label:contains("Timing Mode"))');
-  const totalTimeField = document.querySelector('div:has(> label:contains("Total Quiz Time"))');
   const timingModeSelect = document.getElementById('quiz-timing-mode');
   const totalTimeInput = document.getElementById('quiz-total-time');
-  
-  // Find the parent divs for timing mode and total time
-  const timingModeDiv = timingModeSelect ? timingModeSelect.closest('div') : null;
-  const totalTimeDiv = totalTimeInput ? totalTimeInput.closest('div') : null;
-  
-  if (timingModeDiv) {
-    timingModeDiv.classList.toggle('disabled', !isTimed);
-    timingModeSelect.disabled = !isTimed;
-  }
-  
-  if (totalTimeDiv) {
-    totalTimeDiv.classList.toggle('disabled', !isTimed);
-    totalTimeInput.disabled = !isTimed;
-  }
-  
-  // Also disable time-per-question field when timing mode is 'total'
   const timePerQField = document.getElementById('time-per-question-field');
-  const isTimingModeTotal = document.getElementById('quiz-timing-mode').value === 'total';
+  const quizTimeInput = document.getElementById('quiz-time');
+  const timingModeWrapper = timingModeSelect ? timingModeSelect.closest('div') : null;
+  const totalTimeWrapper = totalTimeInput ? totalTimeInput.closest('div') : null;
+  const isTimingModeTotal = timingModeSelect ? timingModeSelect.value === 'total' : false;
+
+  if (timingModeSelect) {
+    timingModeSelect.disabled = !isTimed;
+    timingModeSelect.style.opacity = !isTimed ? '0.5' : '';
+    timingModeSelect.style.cursor = !isTimed ? 'not-allowed' : '';
+    if (timingModeWrapper) timingModeWrapper.classList.toggle('disabled', !isTimed);
+  }
+
+  if (totalTimeInput) {
+    totalTimeInput.disabled = !isTimed;
+    totalTimeInput.style.opacity = !isTimed ? '0.5' : '';
+    totalTimeInput.style.cursor = !isTimed ? 'not-allowed' : '';
+    if (totalTimeWrapper) totalTimeWrapper.classList.toggle('disabled', !isTimed);
+  }
+
   if (timePerQField) {
-    timePerQField.classList.toggle('disabled', isTimingModeTotal);
+    const disabledByTiming = !isTimed || isTimingModeTotal;
+    timePerQField.classList.toggle('disabled', disabledByTiming);
+    if (quizTimeInput) {
+      quizTimeInput.disabled = disabledByTiming;
+      quizTimeInput.style.opacity = disabledByTiming ? '0.5' : '';
+      quizTimeInput.style.cursor = disabledByTiming ? 'not-allowed' : '';
+    }
   }
 }
 
@@ -293,8 +298,7 @@ function loadQuizMeta() {
   document.getElementById('quiz-timed').checked = quiz.timed !== false;
   document.getElementById('quiz-timing-mode').value = quiz.timingMode || 'perQuestion';
   document.getElementById('quiz-total-time').value = quiz.totalTime || 20;
-  
-  // Apply disabled state based on timed checkbox and timing mode
+
   updateTimingFieldStates();
   renderCreatorResultsPanel();
 }
@@ -354,7 +358,7 @@ function renderSidebar() {
 function renderEditor() {
   const area = document.getElementById('q-editor-area');
   if (selectedQIndex < 0 || selectedQIndex >= quiz.questions.length) {
-    area.innerHTML = `<div class="empty-state"><div class="empty-icon">📝</div><div>Select a question to edit, or add a new one.</div><div style="margin-top:10px"><button class="btn btn-primary[...]
+    area.innerHTML = `<div class="empty-state"><div class="empty-icon">📝</div><div>Select a question to edit, or add a new one.</div><div style="margin-top:10px"><button class="btn btn-primary" onclick="addQuestion()">+ Add First Question</button></div></div>`;
     return;
   }
   const q = quiz.questions[selectedQIndex];
@@ -385,7 +389,7 @@ function renderEditor() {
         </div>
         <div class="field" ${quiz.timingMode === 'total' ? 'style="opacity:0.5;pointer-events:none"' : ''}>
           <label>Time for This Question (seconds)</label>
-          <input type="number" id="q-time-input" min="5" max="600" value="${q.time||quiz.timePerQ}" oninput="saveCurrentEditor();clearSharePanel()" ${quiz.timingMode === 'total' ? 'disabled' : ''[...]
+          <input type="number" id="q-time-input" min="5" max="600" value="${q.time||quiz.timePerQ}" oninput="saveCurrentEditor();clearSharePanel()" ${quiz.timingMode === 'total' ? 'disabled' : ''}>
         </div>
         <div class="field" style="display:flex;align-items:flex-end;gap:8px;padding-bottom:0">
           <button class="btn btn-ghost btn-sm" onclick="prevQ()" ${selectedQIndex===0?'disabled':''}>← Prev</button>
@@ -643,7 +647,7 @@ function renderLibrary() {
   const list = document.getElementById('lib-list');
   const lib = getLibrary().sort((a, b) => b.updatedAt - a.updatedAt);
   if (!lib.length) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div>No saved quizzes yet.</div><div style="margin-top:10px"><button class="btn btn-primary" onclick="startNewQuiz[...]
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div>No saved quizzes yet.</div><div style="margin-top:10px"><button class="btn btn-primary" onclick="startNewQuiz()">+ New Quiz</button></div></div>';
     return;
   }
   list.innerHTML = lib.map(item => `
@@ -762,7 +766,7 @@ function showLobby(q) {
   document.getElementById('lobby-desc').textContent = q.desc || '';
   document.getElementById('lobby-pills').innerHTML = `
     <div class="meta-pill"><strong>${q.questions.length}</strong> Questions</div>
-    <div class="meta-pill"><strong>${q.timed === false ? 'No' : q.timingMode === 'total' ? (q.totalTime || 20) + ' min' : q.timePerQ + 's'}</strong> ${q.timed === false ? 'Timer' : q.timingMode =[...]
+    <div class="meta-pill"><strong>${q.timed === false ? 'No' : q.timingMode === 'total' ? (q.totalTime || 20) + ' min' : q.timePerQ + 's'}</strong> ${q.timed === false ? 'Timer' : q.timingMode === 'total' ? 'Total' : 'Per question'}</div>
     <div class="meta-pill"><strong>${q.pointsPerQ} pts</strong> each</div>`;
   goTo('lobby');
 }
@@ -1027,7 +1031,7 @@ function showResults() {
       :'<span class="review-badge badge-wrong">✗ Wrong</span>';
     const opts = q.options.map((opt,oi) => {
       const isCO = oi===q.correct, isWO = oi===ch&&!isCor;
-      return `<div class="review-opt ${isCO?'correct-ans':isWO?'wrong-ans':''}"><span class="dot"></span><span><strong>${KEYS[oi]}.</strong> ${escHtml(opt)}${isCO?' ✓':''}${isWO?' ✗':''}</sp[...]
+      return `<div class="review-opt ${isCO?'correct-ans':isWO?'wrong-ans':''}"><span class="dot"></span><span><strong>${KEYS[oi]}.</strong> ${escHtml(opt)}${isCO?' ✓':''}${isWO?' ✗':''}</span></div>`;
     }).join('');
     return `<div class="review-card ${sc}"><div class="review-q-num">Q${i+1}</div>${badge}<div class="review-q">${escHtml(q.text)}</div><div class="review-options">${opts}</div></div>`;
   }).join('');

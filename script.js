@@ -931,6 +931,9 @@ function jumpToQuestion(i) {
   if (!totalTimeMode) clearInterval(timerInterval);
   currentQ = i;
   loadQuestion();
+  setTimeout(() => {
+    document.querySelector('.quiz-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
 }
 
 // ════════════════════════════════════

@@ -826,6 +826,14 @@ function nextQuestion() {
   loadQuestion();
 }
 
+function prevQuestion() {
+  if (currentQ > 0) {
+    if (!totalTimeMode) clearInterval(timerInterval);
+    currentQ--;
+    loadQuestion();
+  }
+}
+
 function skipQuestion() {
   playerAnswers[currentQ] = -1;
   playerSkipped[currentQ] = true;

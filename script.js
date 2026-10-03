@@ -796,7 +796,7 @@ function loadQuestion() {
   document.getElementById('q-text').textContent = q.text;
   document.getElementById('q-counter').textContent = `${currentQ+1} / ${total}`;
   document.getElementById('progress-fill').style.width = ((currentQ/total)*100)+'%';
-  document.getElementById('btn-next').textContent = isLast ? 'Submit' : 'Next →';
+  document.getElementById('btn-next').textContent = isLast ? 'Submit' : 'Next';
   document.getElementById('btn-skip').textContent = isLast ? 'Skip & Submit' : 'Skip';
   document.getElementById('answer-grid').innerHTML = q.options.map((opt,i) => `
     <button class="answer-btn ${playerAnswers[currentQ]===i?'selected':''}" id="ans-btn-${i}" onclick="selectAnswer(${i})">
@@ -907,7 +907,7 @@ function toggleFlag() {
 function updateFlagButton() {
   const flagged = flaggedQuestions.has(currentQ);
   const btn = document.getElementById('btn-flag');
-  btn.textContent = flagged ? '🚩 Flagged for Review' : '🚩 Flag for Review';
+  btn.textContent = flagged ? 'Flagged for Review' : 'Flag for Review';
   btn.classList.toggle('flagged', flagged);
 }
 
@@ -1034,9 +1034,9 @@ function showResults() {
     const ch = playerAnswers[i];
     const isCor = ch===q.correct, isSkip = ch===-1, isUnanswered = ch===-1 && !playerSkipped[i];
     const sc = (isSkip || isUnanswered)?'skipped':isCor?'correct':'wrong';
-    const badge = isSkip?'<span class="review-badge badge-skipped">⏩ Skipped</span>'
-      :isCor?'<span class="review-badge badge-correct">✓ Correct</span>'
-      :'<span class="review-badge badge-wrong">✗ Wrong</span>';
+    const badge = isSkip?'<span class="review-badge badge-skipped">Skipped</span>'
+      :isCor?'<span class="review-badge badge-correct">Correct</span>'
+      :'<span class="review-badge badge-wrong">Wrong</span>';
     const opts = q.options.map((opt,oi) => {
       const isCO = oi===q.correct, isWO = oi===ch&&!isCor;
       return `<div class="review-opt ${isCO?'correct-ans':isWO?'wrong-ans':''}"><span class="dot"></span><span><strong>${KEYS[oi]}.</strong> ${escHtml(opt)}${isCO?' ✓':''}${isWO?' ✗':''}</span></div>`;

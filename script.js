@@ -796,6 +796,7 @@ function loadQuestion() {
   document.getElementById('q-text').textContent = q.text;
   document.getElementById('q-counter').textContent = `${currentQ+1} / ${total}`;
   document.getElementById('progress-fill').style.width = ((currentQ/total)*100)+'%';
+  document.getElementById('btn-prev').disabled = currentQ === 0;
   document.getElementById('btn-next').textContent = isLast ? 'Submit' : 'Next';
   document.getElementById('btn-skip').textContent = isLast ? 'Skip & Submit' : 'Skip';
   document.getElementById('answer-grid').innerHTML = q.options.map((opt,i) => `

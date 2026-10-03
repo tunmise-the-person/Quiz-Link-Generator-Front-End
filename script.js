@@ -1032,7 +1032,6 @@ function showResults() {
   }, 100);
 
   document.getElementById('score-pct').textContent = pct+'%';
-  document.getElementById('results-title').textContent = pct>=90?'🏆 Excellent!':pct>=70?'🎉 Great job!':pct>=50?'👍 Not bad!':'📚 Keep practising!';
   document.getElementById('results-sub').textContent = `${playerName} scored ${score} out of ${maxScore} points.`;
   document.getElementById('score-stats').innerHTML = `
     <div class="stat-chip"><div class="val" style="color:var(--success)">${correct}</div><div class="key">Correct</div></div>
@@ -1041,6 +1040,8 @@ function showResults() {
     <div class="stat-chip"><div class="val">${unanswered}</div><div class="key">Unanswered</div></div>
     <div class="stat-chip"><div class="val">${score}</div><div class="key">Points</div></div>`;
 
+  document.getElementById('answers-review').style.display = 'none';
+  document.getElementById('btn-see-answers').textContent = 'See Answers';
   document.getElementById('answers-review').innerHTML = activeQuiz.questions.map((q,i) => {
     const ch = playerAnswers[i];
     const isCor = ch===q.correct, isSkip = ch===-1, isUnanswered = ch===-1 && !playerSkipped[i];

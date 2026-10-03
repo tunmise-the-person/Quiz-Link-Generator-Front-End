@@ -84,7 +84,7 @@
     <label style="margin-top:14px">Public Quiz Page URL</label>
     <input type="text" id="public-url-input" placeholder="https://your-site.com/quiz.html" style="font-family:monospace;font-size:0.85rem">
     <div class="hint-text">Use the web address where this quiz.html file is hosted, so links work from WhatsApp, email, and SMS.</div>
-    <div class="api-key-saved" id="apikey-saved">✓ Share settings saved</div>
+    <div class="api-key-saved" id="apikey-saved">Share settings saved</div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeApiModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveApiKey()">Save Settings & Continue</button>
@@ -109,7 +109,7 @@
   <div class="topbar">
     <div class="logo">Quiz<span>Forge</span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <button class="btn btn-ghost btn-sm" onclick="goTo('home')">← Home</button>
+      <button class="btn btn-ghost btn-sm" onclick="goTo('home')">Home</button>
       <button class="btn btn-primary btn-sm" onclick="startNewQuiz()">+ New Quiz</button>
     </div>
   </div>
@@ -290,6 +290,7 @@
       <div class="q-text" id="q-text">Loading...</div>
       <div class="answer-grid" id="answer-grid"></div>
       <div class="quiz-nav">
+        <button class="btn btn-ghost" id="btn-prev" onclick="prevQuestion()">Previous</button>
         <button class="btn btn-ghost" id="btn-flag" onclick="toggleFlag()">Flag for Review</button>
         <button class="btn btn-ghost" id="btn-skip" onclick="skipQuestion()">Skip</button>
         <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()">Next</button>

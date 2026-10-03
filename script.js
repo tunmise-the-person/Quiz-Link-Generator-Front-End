@@ -305,6 +305,13 @@ function loadQuizMeta() {
 
 function saveDraft() { /* quizzes are now saved from the library */ }
 
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
 // ════════════════════════════════════
 // BUILDER — QUESTIONS
 // ════════════════════════════════════
